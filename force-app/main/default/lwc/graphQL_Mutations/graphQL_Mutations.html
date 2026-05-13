@@ -1,0 +1,68 @@
+<template>
+  <div class="slds-p-around_medium">
+    <lightning-input
+      label="First Name"
+      value={firstName}
+      data-field="firstName"
+      pattern="[A-Za-z ]+"
+      message-when-pattern-mismatch="Use letters only."
+      required
+      onchange={handleInputChange}
+    >
+    </lightning-input>
+
+    <lightning-input
+      label="Last Name"
+      value={lastName}
+      data-field="lastName"
+      pattern="[A-Za-z ]+"
+      message-when-pattern-mismatch="Use letters only."
+      required
+      onchange={handleInputChange}
+    >
+    </lightning-input>
+
+    <lightning-input
+      label="Title"
+      value={title}
+      data-field="title"
+      pattern="[A-Za-z ]+"
+      message-when-pattern-mismatch="Use letters only."
+      required
+      onchange={handleInputChange}
+    >
+    </lightning-input>
+
+    <lightning-input
+      type="email"
+      label="Email"
+      value={email}
+      data-field="email"
+      required
+      onchange={handleInputChange}
+    >
+    </lightning-input>
+
+    <lightning-input
+      type="tel"
+      label="Phone"
+      value={phone}
+      data-field="phone"
+      pattern="^(\+1\s?)?(\([2-9][0-9]{2}\)|[2-9][0-9]{2})[-.\s]?[2-9][0-9]{2}[-.\s]?[0-9]{4}$"
+      message-when-pattern-mismatch="Enter a valid US phone number."
+      required
+      onchange={handleInputChange}
+    >
+    </lightning-input>
+
+    <lightning-button
+      variant="brand"
+      label="Create Contact"
+      title="Create contact"
+      onclick={handleCreateContact}
+      class="slds-m-top_medium"
+      disabled={isCreateDisabled}
+    >
+    </lightning-button>
+  </div>
+</template>

@@ -1,0 +1,39 @@
+<template>
+    <lightning-card title="PDF Data Uploader" icon-name="doctype:pdf">
+        <div class="slds-p-around_medium">
+            <lightning-input
+                type="file"
+                label="Select PDF"
+                accept={acceptedFormats}
+                onchange={handleFileChange}
+            ></lightning-input>
+
+            <div class="slds-m-top_medium">
+                <lightning-button
+                    label="Upload and Process"
+                    variant="brand"
+                    onclick={handleUpload}
+                    disabled={isUploadDisabled}
+                ></lightning-button>
+            </div>
+
+            <template if:true={isLoading}>
+                <div class="slds-m-top_medium">
+                    <lightning-spinner size="small" alternative-text="Processing PDF"></lightning-spinner>
+                </div>
+            </template>
+
+            <template if:true={result}>
+                <div class="slds-m-top_large result-box">
+                    <p><strong>Status:</strong> {result.parsingStatus}</p>
+                    <p><strong>Invoice Number:</strong> {result.invoiceNumber}</p>
+                    <p><strong>Invoice Date:</strong> {result.invoiceDate}</p>
+                    <p><strong>Total Amount:</strong> {result.totalAmount}</p>
+                    <p><strong>Vendor:</strong> {result.vendorName}</p>
+                    <p><strong>Customer:</strong> {result.customerName}</p>
+                    <p><strong>Parsed Record Id:</strong> {result.parsedDocumentId}</p>
+                </div>
+            </template>
+        </div>
+    </lightning-card>
+</template>
