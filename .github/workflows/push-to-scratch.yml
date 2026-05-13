@@ -1,0 +1,73 @@
+name: Push to Scratch Org
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  push-to-scratch:
+    runs-on: ubuntu-latest
+    env:
+      SCRATCH_ORG_ALIAS: ci_scratch
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+
+      - name: Install Salesforce CLI
+        run: |
+          npm install -g sfdx-cli
+
+      - name: Authenticate to Dev Hub (JWT)
+        env:
+          SFDX_CLIENT_ID: ${{ secrets.SFDX_CLIENT_ID }}
+          SFDX_JWT_KEY: ${{ secrets.SFDX_JWT_KEY }}
+          SFDX_USERNAME: ${{ secrets.SFDX_USERNAME }}
+        run: |
+          if [ -z "$SFDX_CLIENT_ID" ] || [ -z "$SFDX_JWT_KEY" ] || [ -z "$SFDX_USERNAME" ]; then
+            echo "Required SFDX secrets are missing. Set SFDX_CLIENT_ID, SFDX_JWT_KEY, and SFDX_USERNAME in repo secrets."; exit 1;
+          fi
+          echo "$SFDX_JWT_KEY" > jwt.key
+          sfdx auth:jwt:grant --clientid "$SFDX_CLIENT_ID" --jwtkeyfile ./jwt.key --username "$SFDX_USERNAME" --setdefaultdevhubusername
+
+      - name: Create scratch org
+        run: |
+          sfdx force:org:create -f config/project-scratch-def.json -a "$SCRATCH_ORG_ALIAS" -s -d 7
+
+      - name: Push source to scratch org
+        run: |
+          sfdx force:source:push -u "$SCRATCH_ORG_ALIAS"
+
+      - name: Run lint and unit tests
+        run: |
+          npm run lint
+          npm run test:unit -- --runInBand
+
+      - name: Open org URL (log)
+        run: |
+          sfdx force:org:display -u "$SCRATCH_ORG_ALIAS" --json
+
+      - name: Delete scratch org (cleanup)
+        if: always()
+        run: |
+          sfdx force:org:delete -u "$SCRATCH_ORG_ALIAS" --noprompt
+
+    
+# Secrets required by this workflow:
+# - SFDX_CLIENT_ID: connected app client id for JWT auth
+# - SFDX_JWT_KEY: the private key contents (multiline) used for JWT auth
+# - SFDX_USERNAME: username of the Dev Hub service account
+# Notes:
+# - Alternatively provide an SFDX_AUTH_URL secret and use `sfdx auth:sfdxurl:store -f <file>` to authenticate.
+# - Adjust branch filters, org duration (-d), and test flags for your CI needs.
